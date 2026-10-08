@@ -1,13 +1,16 @@
 /* =========================================================
    Mi Caballito · app.js
    Para conectar pagos/backend más adelante, edita CONFIG y las
-   funciones sendOrder() y sendCustomRequest() (al final).
+   funciones sendOrder() (el formulario de encargos ya usa FormSubmit) (al final).
    ========================================================= */
 const CONFIG = {
   currency: "EUR",
   locale: "es-ES",
   orderEndpoint: "",   // p. ej. tu función de Stripe/PayPal o servidor
-  customEndpoint: ""   // p. ej. https://formspree.io/f/xxxx
+  // FormSubmit (https://formsubmit.co). Tras activarlo, puedes sustituir el correo por el código
+  // aleatorio que te envía FormSubmit ("Invisible emails") para no dejar tu email visible.
+  customEndpoint: "https://formsubmit.co/ajax/josevaquerizodelaguila@gmail.com",  // envío sin recargar
+  customAction: "https://formsubmit.co/josevaquerizodelaguila@gmail.com"          // respaldo si falla el JS
 };
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -164,22 +167,41 @@ function openCheckout() {
 /* ---------- Personalizados ---------- */
 function openCustom() {
   openModal(`<h2 id="modalTitle">Tu amigurumi personalizado</h2>
-    <form id="customForm">
-      <div class="two"><div><label for="cN">Nombre</label><input id="cN" required></div><div><label for="cE">Email</label><input id="cE" type="email" required></div></div>
-      <label for="cW">¿Qué quieres que hagamos?</label><input id="cW" required placeholder="Mi perro, un regalo de cumpleaños…">
-      <label for="cD">Descripción</label><textarea id="cD" rows="3" required></textarea>
-      <div class="two"><div><label for="cC">Color</label><input id="cC" placeholder="Azul, crema…"></div>
-      <div><label for="cS">Tamaño</label><select id="cS"><option>Pequeño (10-15 cm)</option><option>Mediano (15-25 cm)</option><option>Grande (+25 cm)</option></select></div></div>
-      <label for="cB">Presupuesto aproximado</label><select id="cB"><option>Menos de 30 €</option><option>30-50 €</option><option>50-80 €</option><option>Más de 80 €</option></select>
-      <label for="cF">Imagen de referencia</label><input id="cF" type="file" accept="image/*">
-      <p><button class="btn" type="submit">Enviar solicitud</button></p>
+    <form id="customForm" method="POST" action="${CONFIG.customAction}" enctype="multipart/form-data">
+      <input type="hidden" name="_subject" value="Nuevo encargo personalizado — Mi Caballito">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_next" value="${esc(location.origin + location.pathname)}">
+      <input type="text" name="_honey" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="two"><div><label for="cN">Nombre</label><input id="cN" name="nombre" required autocomplete="name"></div>
+      <div><label for="cE">Email</label><input id="cE" name="email" type="email" required autocomplete="email"></div></div>
+      <label for="cW">¿Qué quieres que hagamos?</label><input id="cW" name="que_quiere" required placeholder="Mi perro, un regalo de cumpleaños…">
+      <label for="cD">Descripción</label><textarea id="cD" name="descripcion" rows="3" required></textarea>
+      <div class="two"><div><label for="cC">Color</label><input id="cC" name="color" placeholder="Azul, crema…"></div>
+      <div><label for="cS">Tamaño</label><select id="cS" name="tamano"><option>Pequeño (10-15 cm)</option><option>Mediano (15-25 cm)</option><option>Grande (+25 cm)</option></select></div></div>
+      <label for="cB">Presupuesto aproximado</label><select id="cB" name="presupuesto"><option>Menos de 30 €</option><option>30-50 €</option><option>50-80 €</option><option>Más de 80 €</option></select>
+      <label for="cF">Imagen de referencia</label><input id="cF" name="imagen_referencia" type="file" accept="image/*">
+      <p><button class="btn" id="cSend" type="submit">Enviar solicitud</button></p>
+      <p id="cStatus" class="form-msg" role="status" aria-live="polite"></p>
     </form>`);
   $("#customForm").onsubmit = async e => {
-    e.preventDefault();
-    const f = $("#cF").files[0];
-    await sendCustomRequest({ name: $("#cN").value, email: $("#cE").value, idea: $("#cW").value, description: $("#cD").value,
-      color: $("#cC").value, size: $("#cS").value, budget: $("#cB").value, referenceImage: f ? f.name : null, file: f || null });
-    $("#modalBody").innerHTML = `<h2 id="modalTitle">¡Solicitud recibida!</h2><p>Gracias por tu idea. Te escribiremos pronto para hablar de los detalles.</p><button class="btn" data-close>Cerrar</button>`;
+    e.preventDefault(); // enviamos con fetch para poder confirmar el resultado antes de mostrar el éxito
+    const f = e.target, st = $("#cStatus"), btn = $("#cSend"), file = f.imagen_referencia.files[0];
+    const say = (m, err) => { st.textContent = m; st.className = "form-msg" + (err ? " err" : ""); };
+    if (f.descripcion.value.trim().length < 10) { say("Cuéntanos un poco más en la descripción (mínimo 10 caracteres).", true); f.descripcion.focus(); return; }
+    if (file && (!file.type.startsWith("image/") || file.size > 8 * 1024 * 1024)) { say("La imagen de referencia debe ser una foto de menos de 8 MB.", true); return; }
+    const fd = new FormData(f); if (!file) fd.delete("imagen_referencia");
+    btn.disabled = true; btn.textContent = "Enviando…"; say("Enviando tu solicitud…");
+    try {
+      const r = await fetch(CONFIG.customEndpoint, { method: "POST", body: fd, headers: { Accept: "application/json" } });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !(d.success === true || d.success === "true")) throw new Error(d.message || "HTTP " + r.status);
+      $("#modalBody").innerHTML = `<h2 id="modalTitle">¡Solicitud enviada!</h2><p>Gracias por tu idea. Te escribiremos pronto al email que nos has indicado.</p><button class="btn" data-close>Cerrar</button>`;
+    } catch (err) {
+      console.error("Encargo no enviado:", err);
+      say("No hemos podido enviar la solicitud. Revisa tu conexión e inténtalo de nuevo en unos minutos.", true);
+      btn.disabled = false; btn.textContent = "Enviar solicitud";
+    }
   };
 }
 
@@ -189,12 +211,6 @@ async function sendOrder(order) {
     // Aquí iría Stripe Checkout / PayPal: crear sesión en tu servidor y redirigir.
     await fetch(CONFIG.orderEndpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(order) });
   } else console.info("Pedido (demo):", order);
-}
-async function sendCustomRequest(data) {
-  if (CONFIG.customEndpoint) {
-    const fd = new FormData(); Object.entries(data).forEach(([k, v]) => { if (v) fd.append(k, v); });
-    await fetch(CONFIG.customEndpoint, { method: "POST", body: fd, headers: { Accept: "application/json" } });
-  } else console.info("Solicitud personalizada (demo):", data);
 }
 
 /* ---------- Modales y panel ---------- */
