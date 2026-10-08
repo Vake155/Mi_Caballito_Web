@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tienda · Amigurumis y patrones de crochet hechos a mano · Mi Caballito</title>
+<meta name="description" content="Todos los amigurumis, patrones de crochet y regalos personalizados de Mi Caballito. Filtra por categoría, busca y elige tu muñeco hecho a mano.">
+<meta property="og:title" content="Tienda · Mi Caballito">
+<meta property="og:description" content="Amigurumis, patrones digitales y encargos personalizados tejidos con cariño.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/images/logo.png">
+<link rel="icon" href="assets/images/logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Almendra:wght@700&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<a class="skip" href="#grid">Saltar a los productos</a>
+<header class="header">
+  <div class="wrap header-in">
+    <a href="index.html" class="brand" aria-label="Mi Caballito, inicio">
+      <img src="assets/images/logo.png" alt="Logotipo de Mi Caballito: caballito de mar azul" width="44" height="44"><span>Mi Caballito</span>
+    </a>
+    <nav class="nav" id="nav" aria-label="Principal">
+      <a href="index.html">Inicio</a>
+      <a href="tienda.html" aria-current="page">Tienda</a>
+      <a href="tienda.html?cat=amigurumi">Amigurumis</a>
+      <a href="tienda.html?cat=patrones">Patrones</a>
+      <a href="index.html#personalizados">Personalizados</a>
+      <a href="index.html#sobre-nosotros">Sobre nosotros</a>
+      <a href="index.html#contacto">Contacto</a>
+    </nav>
+    <div class="tools">
+      <button class="icon-btn" id="searchBtn" aria-label="Ir al buscador">🔍</button>
+      <a class="icon-btn hide-m" href="index.html#contacto" aria-label="Mi cuenta">👤</a>
+      <button class="icon-btn cart-btn" id="cartBtn" aria-label="Abrir carrito">🧺<span id="cartCount" class="count">0</span></button>
+      <button class="icon-btn burger" id="burger" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav">☰</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="shop-head"><div class="wrap">
+    <h1>Tienda</h1>
+    <p class="lead" style="margin:0 auto">Descubre nuestros amigurumis, patrones y creaciones hechas a mano con mucho cariño.</p>
+  </div></section>
+  <div class="thread" aria-hidden="true"></div>
+  <section class="shop"><div class="wrap">
+    <div class="toolbar">
+      <div class="field grow"><label for="searchInput" class="sr">Buscar un producto</label>
+        <input type="search" id="searchInput" placeholder="🔍  Buscar un producto..." autocomplete="off"></div>
+      <div class="field"><label for="sortSel">Ordenar por</label>
+        <select id="sortSel"><option value="">Destacados</option><option value="recent">Más recientes</option><option value="asc">Precio menor a mayor</option><option value="desc">Precio mayor a menor</option><option value="name">Nombre A-Z</option></select></div>
+    </div>
+    <div class="shop-bar">
+      <div class="filters" role="group" aria-label="Filtrar por categoría">
+        <button class="chip active" data-filter="all">Todos</button>
+        <button class="chip" data-filter="amigurumi">Amigurumis</button>
+        <button class="chip" data-filter="patrones">Patrones</button>
+        <button class="chip" data-filter="personalizados">Personalizados</button>
+      </div>
+      <p class="results" id="count" aria-live="polite"></p>
+    </div>
+    <div class="grid" id="grid" aria-live="polite"></div>
+  </div></section>
+</main>
+
+<footer class="footer">
+  <div class="wrap foot-in">
+    <div><h3 class="brandname">Mi Caballito</h3><p>Amigurumis hechos a mano con cariño.</p><p><a href="mailto:hola@micaballito.es">hola@micaballito.es</a></p></div>
+    <div><h3>Explora</h3><a href="tienda.html">Tienda</a><a href="tienda.html?cat=amigurumi">Amigurumis</a><a href="tienda.html?cat=patrones">Patrones</a><a href="index.html#personalizados">Personalizados</a></div>
+    <div><h3>Información</h3><a href="envios.html">Envíos</a><a href="faq.html">Preguntas frecuentes</a><a href="privacidad.html">Política de privacidad</a><a href="terminos.html">Términos y condiciones</a></div>
+    <div><h3>Redes</h3><a href="https://instagram.com/" rel="noopener">Instagram</a><a href="https://facebook.com/" rel="noopener">Facebook</a><a href="https://tiktok.com/" rel="noopener">TikTok</a></div>
+  </div>
+  <p class="copy">© <span id="year"></span> Mi Caballito · Hecho a mano</p>
+</footer>
+
+<div class="overlay" id="overlay" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Carrito" aria-hidden="true">
+  <div class="drawer-head"><h2>Tu cesta</h2><button class="icon-btn" data-close aria-label="Cerrar carrito">✕</button></div>
+  <div class="drawer-body" id="cartBody"></div>
+  <div class="drawer-foot" id="cartFoot"></div>
+</aside>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
+  <div class="modal-box"><button class="icon-btn modal-x" data-close aria-label="Cerrar">✕</button><div id="modalBody"></div></div>
+</div>
+<script src="js/products.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
