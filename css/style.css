@@ -235,3 +235,8 @@ details[open]{background:var(--cream)}
 .grid{transition:min-height .4s ease}
 .header{transition:box-shadow .3s ease,background .3s ease}
 .header.scrolled{box-shadow:0 6px 18px rgba(30,77,176,.1);background:rgba(250,252,255,.99)}
+
+/* Formulario de encargos */
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.form-msg{margin:.4rem 0 0;font-weight:700;min-height:1.4em;color:var(--primary-dark)}
+.form-msg.err{color:#b5483b}
